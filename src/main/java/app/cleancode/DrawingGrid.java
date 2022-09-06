@@ -69,9 +69,17 @@ public class DrawingGrid {
             Rectangle cell = new Rectangle(startingX + xOffset, startingY + yOffset, gridCellLength,
                 gridCellLength);
             grid.getChildren().add(cell);
-            //var currentColor = image.
-            cell.setFill(Color.TRANSPARENT);
-            cell.setStroke(Color.BLACK);
+            int initialColorARGB = image.getRGB(pixelX, pixelY);
+            var awtColor = new java.awt.Color(initialColorARGB, true);
+            Color initialColor = new Color(awtColor.getRed() / 255d, awtColor.getGreen() / 255d,
+                awtColor.getBlue() / 255d, awtColor.getAlpha() / 255d);
+            cell.setFill(initialColor);
+            if (initialColor.getOpacity() > 0) {
+              cell.setStroke(new Color(1 - initialColor.getRed(), 1 - initialColor.getGreen(),
+                  1 - initialColor.getBlue(), 1));
+            } else {
+              cell.setStroke(Color.BLACK);
+            }
             cell.setStrokeWidth(5);
             // To get rid of "local variable declared in an enclosing scope must be final or
             // effectively final" message.
@@ -80,8 +88,12 @@ public class DrawingGrid {
             cell.setOnMouseClicked(event -> {
               Color fillColor = Color.valueOf(color.get());
               cell.setFill(fillColor);
-              cell.setStroke(new Color(1 - fillColor.getRed(), 1 - fillColor.getGreen(),
-                  1 - fillColor.getBlue(), 1));
+              if (fillColor.getOpacity() > 0) {
+                cell.setStroke(new Color(1 - fillColor.getRed(), 1 - fillColor.getGreen(),
+                    1 - fillColor.getBlue(), 1));
+              } else {
+                cell.setStroke(Color.BLACK);
+              }
               imageGraphics.setColor(new java.awt.Color((float) fillColor.getRed(),
                   (float) fillColor.getGreen(), (float) fillColor.getBlue()));
               imageGraphics.drawRect(pixelXCopy, pixelYCopy, 0, 0);
@@ -103,6 +115,21 @@ public class DrawingGrid {
     if (output != null) {
       try {
         ImageIO.write(image, "png", output);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+  }
+
+  public void open() {
+    FileChooser fileChooser = new FileChooser();
+    fileChooser.getExtensionFilters().add(new ExtensionFilter("PNG files", "*.PNG"));
+    File output = fileChooser.showOpenDialog(new Stage());
+    if (output != null) {
+      try {
+        BufferedImage image = ImageIO.read(output);
+        opennedImage = image;
+        context.set(new Context(image.getWidth(), image.getHeight()));
       } catch (Exception e) {
         e.printStackTrace();
       }

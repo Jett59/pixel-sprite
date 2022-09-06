@@ -30,7 +30,7 @@ public class Entrypoint extends Application {
         } catch (NumberFormatException e) {
           textSetter.accept(oldValue);
         }
-      }else {
+      } else {
         numberProperty.set(0);
       }
     };
@@ -68,8 +68,11 @@ public class Entrypoint extends Application {
     DrawingGrid grid = new DrawingGrid(widthProperty, heightProperty, colorProperty);
     rootPane.getChildren().add(grid.getNode());
     Button saveButton = new Button("Save");
-    saveButton.setOnAction(event->grid.save());
+    saveButton.setOnAction(event -> grid.save());
     controlsPane.getChildren().add(saveButton);
+    Button openButton = new Button("Open");
+    openButton.setOnAction(event -> grid.open());
+    controlsPane.getChildren().add(openButton);
     var scene = new Scene(rootPane);
     primaryStage.setScene(scene);
     primaryStage.setMaximized(true);
