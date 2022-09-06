@@ -86,17 +86,21 @@ public class DrawingGrid {
             int pixelXCopy = pixelX;
             int pixelYCopy = pixelY;
             cell.setOnMouseClicked(event -> {
-              Color fillColor = Color.valueOf(color.get());
-              cell.setFill(fillColor);
-              if (fillColor.getOpacity() > 0) {
-                cell.setStroke(new Color(1 - fillColor.getRed(), 1 - fillColor.getGreen(),
-                    1 - fillColor.getBlue(), 1));
+              if (color.get().isBlank()) {
+                color.set(cell.getFill().toString().replace("0x", "#"));
               } else {
-                cell.setStroke(Color.BLACK);
+                Color fillColor = Color.valueOf(color.get());
+                cell.setFill(fillColor);
+                if (fillColor.getOpacity() > 0) {
+                  cell.setStroke(new Color(1 - fillColor.getRed(), 1 - fillColor.getGreen(),
+                      1 - fillColor.getBlue(), 1));
+                } else {
+                  cell.setStroke(Color.BLACK);
+                }
+                imageGraphics.setColor(new java.awt.Color((float) fillColor.getRed(),
+                    (float) fillColor.getGreen(), (float) fillColor.getBlue()));
+                imageGraphics.drawRect(pixelXCopy, pixelYCopy, 0, 0);
               }
-              imageGraphics.setColor(new java.awt.Color((float) fillColor.getRed(),
-                  (float) fillColor.getGreen(), (float) fillColor.getBlue()));
-              imageGraphics.drawRect(pixelXCopy, pixelYCopy, 0, 0);
             });
           }
         }
