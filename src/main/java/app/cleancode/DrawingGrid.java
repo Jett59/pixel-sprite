@@ -4,6 +4,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.io.File;
 import javax.imageio.ImageIO;
 import javafx.beans.property.IntegerProperty;
@@ -18,6 +19,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class DrawingGrid {
+  private static final String LAST_FILE_PREFERENCE = "LAST_USED_FILE";
   private static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
   private static double GRID_LENGTH = Math.min(screenSize.width, screenSize.height);
 
@@ -97,9 +99,11 @@ public class DrawingGrid {
                 } else {
                   cell.setStroke(Color.BLACK);
                 }
-                imageGraphics.setColor(new java.awt.Color((float) fillColor.getRed(),
-                    (float) fillColor.getGreen(), (float) fillColor.getBlue()));
-                imageGraphics.drawRect(pixelXCopy, pixelYCopy, 0, 0);
+                image.setRGB(pixelXCopy, pixelYCopy, 0);
+                imageGraphics.setColor(
+                    new java.awt.Color((float) fillColor.getRed(), (float) fillColor.getGreen(),
+                        (float) fillColor.getBlue(), (float) fillColor.getOpacity()));
+                imageGraphics.fillRect(pixelXCopy, pixelYCopy, 1, 1);
               }
             });
           }
@@ -114,9 +118,14 @@ public class DrawingGrid {
 
   public void save() {
     FileChooser fileChooser = new FileChooser();
+    if (!Preferences.getPreference(LAST_FILE_PREFERENCE).isEmpty()) {
+      fileChooser.setInitialDirectory(
+          new File(Preferences.getPreference(LAST_FILE_PREFERENCE)).getParentFile());
+    }
     fileChooser.getExtensionFilters().add(new ExtensionFilter("PNG files", "*.PNG"));
     File output = fileChooser.showSaveDialog(new Stage());
     if (output != null) {
+      Preferences.setPreference(LAST_FILE_PREFERENCE, output.getAbsolutePath());
       try {
         ImageIO.write(image, "png", output);
       } catch (Exception e) {
@@ -127,12 +136,18 @@ public class DrawingGrid {
 
   public void open() {
     FileChooser fileChooser = new FileChooser();
+    if (!Preferences.getPreference(LAST_FILE_PREFERENCE).isEmpty()) {
+      fileChooser.setInitialDirectory(
+          new File(Preferences.getPreference(LAST_FILE_PREFERENCE)).getParentFile());
+    }
     fileChooser.getExtensionFilters().add(new ExtensionFilter("PNG files", "*.PNG"));
-    File output = fileChooser.showOpenDialog(new Stage());
-    if (output != null) {
+    File file = fileChooser.showOpenDialog(new Stage());
+    if (file != null) {
+      Preferences.setPreference(LAST_FILE_PREFERENCE, file.getAbsolutePath());
       try {
-        BufferedImage image = ImageIO.read(output);
+        BufferedImage image = ImageIO.read(file);
         opennedImage = image;
+        context.set(new Context(0, 0));
         context.set(new Context(image.getWidth(), image.getHeight()));
       } catch (Exception e) {
         e.printStackTrace();
